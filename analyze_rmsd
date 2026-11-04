@@ -1,0 +1,79 @@
+import os
+
+RESULTS_DIR = "results"
+
+def parse_rmsd_from_log(log_file):
+    """Parses the Vina log file and extracts the RMSD values for the top poses."""
+    rmsd_values = []
+    if not os.path.exists(log_file):
+        return None
+    
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+    
+    # Find the table and parse only valid data rows
+    in_table = False
+    for line in lines:
+        if line.strip().startswith("mode |   affinity | dist from best mode"):
+            in_table = True
+            continue
+        
+        if in_table:
+            if line.strip().startswith("---"):
+                continue
+            if not line.strip():
+                break
+            
+            parts = line.split()
+            # Check if the first part is a digit (to skip headers and '|')
+            if parts and parts[0].isdigit():
+                mode = parts[0]
+                rmsd_lb = float(parts[2])
+                rmsd_ub = float(parts[3])
+                rmsd_values.append((mode, rmsd_lb, rmsd_ub))
+    
+    return rmsd_values
+
+print("Analyzing Docking Stability (RMSD)...\n")
+
+# --- Analyze Wild-Type ---
+wt_log = os.path.join(RESULTS_DIR, "wild_type_log.txt")
+wt_rmsd = parse_rmsd_from_log(wt_log)
+
+if wt_rmsd:
+    print("Wild-Type (RMSD of top 3 poses):")
+    print("Mode | RMSD l.b. (Å) | RMSD u.b. (Å)")
+    print("-" * 35)
+    for mode, lb, ub in wt_rmsd[:3]:
+        print(f"  {mode}  |    {lb:6.3f}    |    {ub:6.3f}")
+else:
+    print("Wild-Type log not found.")
+
+print("\n" + "="*40 + "\n")
+
+# --- Analyze Mutant ---
+mut_log = os.path.join(RESULTS_DIR, "mutant_log.txt")
+mut_rmsd = parse_rmsd_from_log(mut_log)
+
+if mut_rmsd:
+    print("Mutant (RMSD of top 3 poses):")
+    print("Mode | RMSD l.b. (Å) | RMSD u.b. (Å)")
+    print("-" * 35)
+    for mode, lb, ub in mut_rmsd[:3]:
+        print(f"  {mode}  |    {lb:6.3f}    |    {ub:6.3f}")
+else:
+    print("Mutant log not found.")
+
+# Interpretation
+print("\n--- Interpretation ---")
+if wt_rmsd and mut_rmsd:
+    wt_top_rmsd = wt_rmsd[1][1] # RMSD of mode 2
+    mut_top_rmsd = mut_rmsd[1][1] # RMSD of mode 2
+    
+    print(f"Wild-Type Mode 2 RMSD: {wt_top_rmsd:.2f} Å")
+    print(f"Mutant Mode 2 RMSD: {mut_top_rmsd:.2f} Å")
+    
+    if wt_top_rmsd < 2.0 and mut_top_rmsd < 2.0:
+        print("Conclusion: Both dockings are highly stable (RMSD < 2.0 Å).")
+    else:
+        print("Conclusion: The docking shows some variability between the top poses.")

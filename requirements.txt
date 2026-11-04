@@ -1,0 +1,6 @@
+rdkit
+meeko
+numpy
+matplotlib
+biopython
+prody
