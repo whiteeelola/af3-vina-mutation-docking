@@ -110,6 +110,14 @@ This project serves as a foundational framework. Future iterations could be sign
 2.  **AutoDock Vina:** Eberhardt, J., et al. (2021). AutoDock Vina 1.2.0: New Docking Methods, Expanded Force Field, and Python Bindings. *Journal of Chemical Information and Modeling*.
 3.  **PfDHFR Mutation:** Sirawaraporn, W., et al. (1997). Mutational analysis of the dihydrofolate reductase from *Plasmodium falciparum*. *Journal of Biological Chemistry*.
 
+### Evolutionary Scoring vs. Biophysical Docking
+To further investigate the mutation's impact, we used the **ESM-2 protein language model** (Meta AI) to score the evolutionary fitness of the S108N mutation. Using a masked marginal approach, we calculated the log-likelihood ratio (LLR) between the wild-type and mutant residues.
+
+*   **ESM-2 Result**: The LLR score was positive (+1.2490), indicating that the mutation is **evolutionarily tolerated** (the protein can still fold and function).
+*   **Docking Result**: In contrast, AutoDock Vina showed that the mutation slightly **weakens drug binding** (ΔG decreased by 0.159 kcal/mol).
+
+**Key Insight**: These results highlight the complementary nature of sequence-based and structure-based approaches. While ESM-2 suggests that the mutation is evolutionarily tolerated (it does not severely disrupt the protein's evolutionary fitness), AutoDock Vina reveals that the mutation introduces subtle energetic penalties in the binding pocket. This discrepancy underscores that evolutionary models (pLMs) and physical docking capture different aspects of protein biology. Integrating both approaches is essential to fully understand the mechanistic consequences of missense variants.
+
 ## How to Reproduce
 
 To run this pipeline on your local machine and reproduce the results, follow the step-by-step instructions below:
